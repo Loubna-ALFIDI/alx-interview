@@ -15,6 +15,10 @@ def validUTF8(data):
     num_of_bytes = 0
 
     for num in data:
+        if not (0 <= num <= 255):
+            return False
+
+    for num in data:
         bin_rep = format(num, '#010b')[-8:]
 
         if num_of_bytes == 0:
