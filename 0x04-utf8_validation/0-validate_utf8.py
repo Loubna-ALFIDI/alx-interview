@@ -13,24 +13,37 @@ def validUTF8(data):
         bool: True if data is a valid UTF-8 encoded string, False otherwise.
     """
 
-    n_bytes = 0
+    def count_leading_ones(first_byte):
+        """ Count the number of leading 1s in the first byte """
+        if first_byte & 0b10000000 == 0:
+            return 1
+        num_leading_ones = 0
+        mask = 0b10000000
+        while mask & first_byte:
+            num_leading_ones += 1
+            mask >>= 1
+        if num_leading_ones == 1 or num_leading_ones > 4:
+            return -1
+        return num_leading_ones
 
-    for num in data:
-        bin_rep = format(num, '#010b')[-8:]
+    current_index = 0
+    while current_index < len(data):
+        first_byte = data[current_index]
+        num_bytes_needed = count_leading_ones(first_byte)
 
-        if n_bytes == 0:
-            for bit in bin_rep:
-                if bit == '0':
-                    break
-                n_bytes += 1
+        if num_bytes_needed == -1:
+            return False
+        if num_bytes_needed == 1:
+            current_index += 1
+            continue
 
-            if n_bytes == 0:
-                continue
+        if current_index + num_bytes_needed > len(data):
+            return False
 
-        else:
-            if not (bin_rep[0] == '1' and bin_rep[1] == '0'):
+        for j in range(1, num_bytes_needed):
+            if not (data[current_index + j] & 0b11000000 == 0b10000000):
                 return False
 
-        n_bytes -= 1
+        current_index += num_bytes_needed
 
-    return n_bytes == 0
+    return True
